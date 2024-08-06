@@ -4,7 +4,7 @@ import java.util.Collections;
 import java.util.InputMismatchException;
 import java.util.Scanner;
 
-public class BlackJackGameOld {
+public class BlackJackGameConsole {
 
     public static void main(String[] args) {
 

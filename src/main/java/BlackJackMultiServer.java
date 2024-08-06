@@ -6,7 +6,7 @@ import java.net.ServerSocket;
 public class BlackJackMultiServer {
     public static void main(String[] args) throws IOException {
 
-        int portNumber = 4401;
+        int portNumber = 4400;
         boolean listening = true;
 
         try (ServerSocket serverSocket = new ServerSocket(portNumber)) {
