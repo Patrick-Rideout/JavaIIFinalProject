@@ -4,6 +4,9 @@ import java.util.Collections;
 import java.util.InputMismatchException;
 import java.util.Scanner;
 
+/**
+ * This class allows you to run the Black Jack game in console.
+ */
 public class BlackJackGameConsole {
 
     public static void main(String[] args) {

@@ -6,7 +6,20 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 
+/**
+ * The BlackJackClient class represents a simple client for interacting with a
+ * Blackjack game server. This client connects to the server, sends user commands,
+ * and processes responses from the server.
+ */
 public class BlackJackClient {
+
+    /**
+     * The entry point of the BlackJackClient application. Establishes a connection to
+     * the Blackjack server and handles communication with it.
+     *
+     * @param args Command-line arguments (not used in this implementation).
+     * @throws IOException If an I/O error occurs when opening the socket or reading/writing streams.
+     */
     public static void main(String[] args) throws IOException {
         String hostName = "localhost";
         int portNumber = 4400;
@@ -15,16 +28,17 @@ public class BlackJackClient {
                 Socket socket = new Socket(hostName, portNumber);
                 PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
                 BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                BufferedReader stdIn = new BufferedReader(new InputStreamReader(System.in));
+                BufferedReader stdIn = new BufferedReader(new InputStreamReader(System.in))
         ) {
-            String fromServer, fromUser;
+            String fromServer;
+            String fromUser;
+
             while ((fromServer = in.readLine()) != null) {
                 System.out.println("Server: " + fromServer);
 
                 fromUser = stdIn.readLine();
                 if (fromUser != null) {
-                    JSONObject jsonObject = new JSONObject();
-                    jsonObject.put("action", fromUser);
+                    JSONObject jsonObject = BlackJackJSONObject.getObject(fromUser);
                     out.println(jsonObject.toJSONString());
                 }
             }

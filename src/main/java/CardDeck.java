@@ -2,7 +2,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 /**
- * The FinalProject.CardDeck class represents a deck of playing cards and operations related to the deck.
+ * The CardDeck class represents a deck of playing cards and operations related to the deck.
  */
 public class CardDeck {
 
@@ -10,7 +10,7 @@ public class CardDeck {
     private ArrayList<PlayingCard> deckOfCards;
 
     /**
-     * Constructs a FinalProject.CardDeck with a complete deck of 52 standard playing cards.
+     * Constructs a CardDeck with a complete deck of 52 standard playing cards.
      * Initializes the deckOfCards ArrayList.
      */
     public CardDeck() {

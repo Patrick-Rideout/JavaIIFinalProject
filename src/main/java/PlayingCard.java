@@ -9,7 +9,7 @@ public class PlayingCard {
     private Suit suit;
 
     /**
-     * Constructs a FinalProject.PlayingCard with the specified value and suit.
+     * Constructs a PlayingCard with the specified value and suit.
      *
      * @param value The numerical value of the card.
      * @param suit  The suit of the card.
