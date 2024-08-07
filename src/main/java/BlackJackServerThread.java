@@ -9,14 +9,18 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.ArrayList;
 
+
 public class BlackJackServerThread extends Thread {
     private Socket clientSocket;
     private BlackJackGame game;
 
+    private int gameStart;
+
     public BlackJackServerThread(Socket clientSocket) {
         super("BlackJackServerThread");
         this.clientSocket = clientSocket;
-        this.game = new BlackJackGame(); // Initialize game instance
+        this.game = new BlackJackGame();
+        this.gameStart = 0;
     }
 
     public void run() {
@@ -27,26 +31,41 @@ public class BlackJackServerThread extends Thread {
             JSONObject response = new JSONObject();
 
             // Send initial game state
+
+
             response.put("message", "Game started.");
             response.put("balance", game.getPlayer().getMoney());
             response.put("playerHand", game.getPlayer().getHand().getHandOfCards().toString());
-            response.put("dealerHand", game.getDealer().getHand().getHandOfCards().get(0).toString() + ", **"); // Hide dealer's hand initially
+            response.put("dealerHand", game.getDealer().getHand().getHandOfCards().get(0).toString() + ", **");
             out.println(response.toJSONString());
+            int bet = 0;
 
             String inputLine;
             while ((inputLine = in.readLine()) != null) {
+
+
                 JSONObject responseMessage = new JSONObject();
                 try {
                     JSONObject request = (JSONObject) new JSONParser().parse(inputLine);
                     String action = (String) request.get("action");
-                    int bet = request.containsKey("bet") ? Integer.parseInt(request.get("bet").toString()) : 0;
 
-                    if ("bet".equalsIgnoreCase(action)) {
-                        if (bet <= 0 || bet > game.getPlayer().getMoney()) {
+                    String[] actionParts = action.split(" ");
+                    if (actionParts[0].equalsIgnoreCase("bet")) {
+                        int wantedBet;
+                        try {
+                            wantedBet = Integer.parseInt(actionParts[1]);
+                        } catch (NumberFormatException e) {
+                            responseMessage.put("message", "Invalid bet amount. Please enter a valid number.");
+                            out.println(responseMessage.toJSONString());
+                            continue;
+                        }
+
+                        if (wantedBet <= 0 || wantedBet > game.getPlayer().getMoney()) {
                             responseMessage.put("message", "Invalid bet amount. Please enter a valid amount.");
                         } else {
-                            game.getPlayer().setMoney(game.getPlayer().getMoney() - bet);
-                            responseMessage.put("message", "Bet placed. Choose 'hit' or 'stay'.");
+                            game.getPlayer().setMoney(game.getPlayer().getMoney() - wantedBet);
+                            bet = wantedBet;
+                            responseMessage.put("message", "Bet placed. Choose 'hit' or 'stand'.");
                             responseMessage.put("balance", game.getPlayer().getMoney());
                         }
                     } else if ("hit".equalsIgnoreCase(action)) {
@@ -60,28 +79,31 @@ public class BlackJackServerThread extends Thread {
                             responseMessage.put("message", "You busted! Game over. Type 'new' to start a new game.");
                             out.println(responseMessage.toJSONString());
                             game.resetGame();
+                            bet = 0;
                             continue;
                         }
-                    } else if ("stay".equalsIgnoreCase(action)) {
+                    } else if ("stand".equalsIgnoreCase(action)) {
                         while (getHandValue(game.getDealer().getHand().getHandOfCards()) < 17) {
                             game.getCurrentDeck().drawCard(game.getDealer().getHand());
                         }
                         if (isBusted(game.getDealer().getHand().getHandOfCards())) {
                             responseMessage.put("message", "Dealer busted! You win!");
-                            game.getPlayer().setMoney(game.getPlayer().getMoney() + bet * 2); // Player wins double the bet
+                            game.getPlayer().setMoney(game.getPlayer().getMoney() + bet * 2);
+                            bet = 0;
                         } else {
                             int playerValue = getHandValue(game.getPlayer().getHand().getHandOfCards());
                             int dealerValue = getHandValue(game.getDealer().getHand().getHandOfCards());
                             if (playerValue > dealerValue) {
                                 responseMessage.put("message", "You win!");
-                                game.getPlayer().setMoney(game.getPlayer().getMoney() + bet * 2); // Player wins double the bet
+                                game.getPlayer().setMoney(game.getPlayer().getMoney() + bet * 2);
                             } else if (playerValue < dealerValue) {
                                 responseMessage.put("message", "Dealer wins!");
                             } else {
                                 responseMessage.put("message", "It's a tie! Bet returned.");
-                                game.getPlayer().setMoney(game.getPlayer().getMoney() + bet); // Return bet on tie
+                                game.getPlayer().setMoney(game.getPlayer().getMoney() + bet);
                             }
                         }
+                        bet = 0;
                         responseMessage.put("balance", game.getPlayer().getMoney());
                         responseMessage.put("playerHand", game.getPlayer().getHand().getHandOfCards().toString());
                         responseMessage.put("dealerHand", game.getDealer().getHand().getHandOfCards().toString());
@@ -90,12 +112,14 @@ public class BlackJackServerThread extends Thread {
                         continue;
                     } else if ("new".equalsIgnoreCase(action)) {
                         game.resetGame();
+                        bet = 0;
+                        game.getPlayer().setMoney(game.getPlayer().getMoney() + bet);
                         responseMessage.put("message", "New game started. Place your bet.");
                         responseMessage.put("balance", game.getPlayer().getMoney());
                         responseMessage.put("playerHand", game.getPlayer().getHand().getHandOfCards().toString());
                         responseMessage.put("dealerHand", game.getDealer().getHand().getHandOfCards().get(0).toString() + ", **");
                     } else {
-                        responseMessage.put("message", "Invalid action. Please type 'bet', 'hit', 'stay', or 'new'.");
+                        responseMessage.put("message", "Invalid action. Please type 'bet', 'hit', 'stand', or 'new'.");
                         responseMessage.put("balance", game.getPlayer().getMoney());
                         responseMessage.put("playerHand", game.getPlayer().getHand().getHandOfCards().toString());
                         responseMessage.put("dealerHand", game.getDealer().getHand().getHandOfCards().get(0).toString() + ", **");
