@@ -161,7 +161,7 @@ public class BlackJackServerThread extends Thread {
     }
 
     /**
-     * Checks if the specified hand is busted (i.e., hand value exceeds 21).
+     * Checks if the specified hand is busted (hand value exceeds 21).
      *
      * @param hand the hand to check
      * @return true if the hand is busted, false otherwise
