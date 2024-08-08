@@ -1,18 +1,16 @@
 import org.json.simple.JSONObject;
 
 /**
- * The BlackJackJSONObject class provides utility methods for creating JSON
- * objects related to the Blackjack game. It includes methods for formatting
- * messages to be sent between the client and server.
+ * Utility class for creating JSON objects with a given message.
+ * This class uses the json-simple library to construct JSON objects.
  */
 public class BlackJackJSONObject {
 
     /**
-     * Creates a JSON object with a single key-value pair where the key is "action"
-     * and the value is the provided message.
+     * Creates a JSON object with a specified message.
      *
-     * @param msg The message to be included in the JSON object.
-     * @return A JSONObject containing the message under the key "action".
+     * @param msg the message to include in the JSON object
+     * @return a JSON object containing the provided message
      */
     static JSONObject getObject(String msg) {
         JSONObject obj = new JSONObject();

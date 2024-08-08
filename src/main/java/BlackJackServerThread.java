@@ -9,13 +9,20 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.ArrayList;
 
-
+/**
+ * This class handles a single client connection for a blackjack game.
+ * It extends the Thread class to handle concurrent connections.
+ */
 public class BlackJackServerThread extends Thread {
     private Socket clientSocket;
     private BlackJackGame game;
-
     private int gameStart;
 
+    /**
+     * Constructs a new BlackJackServerThread with the specified client socket.
+     *
+     * @param clientSocket the socket connected to the client
+     */
     public BlackJackServerThread(Socket clientSocket) {
         super("BlackJackServerThread");
         this.clientSocket = clientSocket;
@@ -23,15 +30,15 @@ public class BlackJackServerThread extends Thread {
         this.gameStart = 0;
     }
 
+    /**
+     * Runs the thread, handling client input and game logic.
+     */
     public void run() {
         try (
                 PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
                 BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
         ) {
             JSONObject response = new JSONObject();
-
-            // Send initial game state
-
 
             response.put("message", "Game started.");
             response.put("balance", game.getPlayer().getMoney());
@@ -42,8 +49,6 @@ public class BlackJackServerThread extends Thread {
 
             String inputLine;
             while ((inputLine = in.readLine()) != null) {
-
-
                 JSONObject responseMessage = new JSONObject();
                 try {
                     JSONObject request = (JSONObject) new JSONParser().parse(inputLine);
@@ -76,10 +81,15 @@ public class BlackJackServerThread extends Thread {
                         responseMessage.put("dealerHand", game.getDealer().getHand().getHandOfCards().get(0).toString() + ", **");
 
                         if (isBusted(game.getPlayer().getHand().getHandOfCards())) {
-                            responseMessage.put("message", "You busted! Game over. Type 'new' to start a new game.");
+                            if (game.getPlayer().getMoney() == 0) {
+                                responseMessage.put("message", "You Busted! You are out of money! GAME OVER!");
+                                out.println(responseMessage.toJSONString());
+                                break;
+                            }
+                            responseMessage.put("message", "You busted! Type 'new' to start a new game.");
                             out.println(responseMessage.toJSONString());
-                            game.resetGame();
                             bet = 0;
+                            game.resetGame();
                             continue;
                         }
                     } else if ("stand".equalsIgnoreCase(action)) {
@@ -89,7 +99,6 @@ public class BlackJackServerThread extends Thread {
                         if (isBusted(game.getDealer().getHand().getHandOfCards())) {
                             responseMessage.put("message", "Dealer busted! You win!");
                             game.getPlayer().setMoney(game.getPlayer().getMoney() + bet * 2);
-                            bet = 0;
                         } else {
                             int playerValue = getHandValue(game.getPlayer().getHand().getHandOfCards());
                             int dealerValue = getHandValue(game.getDealer().getHand().getHandOfCards());
@@ -107,13 +116,20 @@ public class BlackJackServerThread extends Thread {
                         responseMessage.put("balance", game.getPlayer().getMoney());
                         responseMessage.put("playerHand", game.getPlayer().getHand().getHandOfCards().toString());
                         responseMessage.put("dealerHand", game.getDealer().getHand().getHandOfCards().toString());
+
+                        if (game.getPlayer().getMoney() == 0) {
+                            responseMessage.put("message", "Dealer Wins! You are out of money! GAME OVER");
+                            out.println(responseMessage.toJSONString());
+                            break;
+                        }
+
                         out.println(responseMessage.toJSONString());
                         game.resetGame();
+
                         continue;
                     } else if ("new".equalsIgnoreCase(action)) {
                         game.resetGame();
                         bet = 0;
-                        game.getPlayer().setMoney(game.getPlayer().getMoney() + bet);
                         responseMessage.put("message", "New game started. Place your bet.");
                         responseMessage.put("balance", game.getPlayer().getMoney());
                         responseMessage.put("playerHand", game.getPlayer().getHand().getHandOfCards().toString());
@@ -125,7 +141,6 @@ public class BlackJackServerThread extends Thread {
                         responseMessage.put("dealerHand", game.getDealer().getHand().getHandOfCards().get(0).toString() + ", **");
                     }
 
-                    // Send updated game state to client
                     out.println(responseMessage.toJSONString());
 
                 } catch (ParseException e) {
@@ -145,10 +160,22 @@ public class BlackJackServerThread extends Thread {
         }
     }
 
+    /**
+     * Checks if the specified hand is busted (i.e., hand value exceeds 21).
+     *
+     * @param hand the hand to check
+     * @return true if the hand is busted, false otherwise
+     */
     private boolean isBusted(ArrayList<PlayingCard> hand) {
         return getHandValue(hand) > 21;
     }
 
+    /**
+     * Calculates the total value of the specified hand.
+     *
+     * @param hand the hand whose value to calculate
+     * @return the total value of the hand
+     */
     private int getHandValue(ArrayList<PlayingCard> hand) {
         int total = 0;
         int aces = 0;

@@ -16,9 +16,6 @@ public class BlackJackClient {
     /**
      * The entry point of the BlackJackClient application. Establishes a connection to
      * the Blackjack server and handles communication with it.
-     *
-     * @param args Command-line arguments (not used in this implementation).
-     * @throws IOException If an I/O error occurs when opening the socket or reading/writing streams.
      */
     public static void main(String[] args) throws IOException {
         String hostName = "localhost";

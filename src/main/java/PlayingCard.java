@@ -1,7 +1,7 @@
 import java.io.PrintStream;
 
 /**
- * The FinalProject.PlayingCard class represents a playing card with a value and a suit.
+ * The PlayingCard class represents a playing card with a value and a suit.
  */
 public class PlayingCard {
     public static final int ACE = 14;
